@@ -1,0 +1,174 @@
+{% load static %}
+{% include 'nav.html' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion - Game Keys Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+        }
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .login-card {
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            border: 1px solid #C8AA6E;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(200, 170, 110, 0.3);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-card h2 {
+            color: #C8AA6E;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 600;
+        }
+        .form-control {
+            background-color: #222;
+            border: 1px solid #555;
+            color: #eee;
+        }
+        .form-control::placeholder {
+            color: #bbb;
+        }
+
+        .btn-login, .btn-primary {
+            background-color: #C8AA6E;
+            color: #111;
+            border: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        .btn-login:hover, .btn-primary:hover {
+            background-color: #D3BB8B;
+            color: #111;
+        }
+        .form-text {
+            color: #bbb;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .form-text a {
+            color: #C8AA6E;
+            text-decoration: none;
+        }
+        .form-text a:hover {
+            color: #D3BB8B;
+            text-decoration: underline;
+        }
+        .errorlist {
+            color: #f44336;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .form-label {
+            color: #C8AA6E;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            background-color: #222;
+            border: 1px solid #555;
+            color: #eee;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input::placeholder {
+            color: #bbb;
+        }
+
+         input:focus {
+            background-color: #111;
+            border-color: #C8AA6E;
+            color: #fff;
+            box-shadow: 0 0 8px #C8AA6E;
+            outline: none;
+        }
+        
+        .btn-login {
+            background-color: #C8AA6E;
+            color: #111;
+            border: none;
+            font-weight: 600;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background-color: #D3BB8B;
+            color: #111;
+        }
+        #id_username{
+            background-color: #222222 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <h2>Connexion</h2>
+
+        {% if form.errors %}
+            <ul class="errorlist">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" class="card p-4 shadow-sm">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Nom d'utilisateur</label>
+                {{ form.username }}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Mot de passe</label>
+                {{ form.password }}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login">Se connecter</button>
+        </form>
+
+        <p class="form-text mt-3">
+            Pas encore de compte ? <a href="{% url 'register' %}">Inscrivez-vous</a>
+        </p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h2>Merci pour votre achat !</h2>
+  <p>Voici votre/vos clé(s) d'activation :</p>
+  {% if keys %}
+    <ul>
+      {% for key in keys %}
+        <li><strong>{{ key }}</strong></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Aucune clé générée.</p>
+  {% endif %}
+{% endblock %}

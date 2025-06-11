@@ -1,0 +1,211 @@
+{% extends 'nav.html' %}
+
+{% block content %}
+
+<style>
+    body {
+            background-color: #111;
+            color: #fff;
+        }
+    .cart-container {
+        margin-top: 3rem;
+        color: #f5f5f5;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 2rem;
+    }
+
+    .cart-items {
+        width: 100%;
+    }
+
+    .cart-item {
+        background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+        box-shadow: 0 4px 12px rgba(200, 170, 110, 0.08);
+        border-radius: 0.75rem;
+        border: 1px solid #C8AA6E;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .cart-item a {
+        color: #C8AA6E;
+        text-decoration: none;
+    }
+
+    .cart-item .text-muted {
+        color: #b0b0b0 !important;
+    }
+
+    .quantity-display {
+        font-size: 1rem;
+        padding: 0.4rem 1rem;
+    }
+
+    .btn-outline-light:hover {
+        background-color: #C8AA6E;
+        color: #111;
+    }
+
+    .cart-summary {
+        background: linear-gradient(145deg, #1c1c1c, #292929);
+        border: 1px solid #C8AA6E;
+        box-shadow: 0 0 12px rgba(200, 170, 110, 0.2);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        position: sticky;
+        top: 90px;
+        height: fit-content;
+    }
+
+    .cart-summary h4 {
+        color: #C8AA6E;
+    }
+
+    .empty-cart-alert {
+        background-color: #f8f9fa;
+        color: #212529;
+        border: none;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+
+    .cart-item-price-info {
+        display: flex;
+        flex-direction: column;
+        margin-top: 0.5rem;
+    }
+
+    .cart-item-price-info p {
+        margin: 0;
+    }
+</style>
+
+<div class="container cart-container">
+
+    <div class="cart-items">
+        <h2 class="mb-4">🛒 Votre Panier</h2>
+
+        {% if cart_items %}
+            {% for item in cart_items %}
+                {% if item.game %}
+                    <div class="cart-item" data-game-id="{{ item.game.id }}">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap">
+                            <div>
+                                <h5 class="mb-1">
+                                    <a href="{% url 'game_detail' item.game.id %}">
+                                        {{ item.game.name }}
+                                    </a>
+                                </h5>
+
+                                <div class="cart-item-price-info text-muted">
+                                    <p>Prix unitaire : <strong>{{ item.game.price }} €</strong></p>
+                                    <p>Total : <strong><span class="item-total">{{ item.total_price }}</span> €</strong></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3 mt-3">
+                            <span class="me-2">Quantité :</span>
+
+                            <button class="btn btn-sm btn-outline-light decrement-btn" data-game-id="{{ item.game.id }}">
+                                {% if item.quantity > 1 %}
+                                    <i class="bi bi-dash-lg"></i>
+                                {% else %}
+                                    <i class="bi bi-trash3 text-danger"></i>
+                                {% endif %}
+                            </button>
+
+                            <span class="quantity-display badge bg-secondary">{{ item.quantity }}</span>
+
+                            <button class="btn btn-sm btn-outline-light increment-btn" data-game-id="{{ item.game.id }}">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info empty-cart-alert">Votre panier est vide.</div>
+        {% endif %}
+    </div>
+
+    {% if cart_items %}
+    <div class="cart-summary text-end">
+        <h4>Total général</h4>
+        <p class="fs-5 text-gold mb-4"><strong><span id="total-price">{{ total_price }}</span> €</strong></p>
+        <form method="post" action="{% url 'complete_purchase' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success w-100 py-2 rounded-pill">
+                Valider l'achat
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        function updateCart(gameId, action) {
+            fetch("{% url 'ajax_update_cart' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({ game_id: gameId, action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const itemRow = document.querySelector(`[data-game-id='${gameId}']`);
+                    const quantitySpan = itemRow?.querySelector('.quantity-display');
+                    const itemTotal = itemRow?.querySelector('.item-total');
+                    const totalPriceSpan = document.getElementById('total-price');
+                    const badge = document.querySelector('#cart-badge');
+                    const decrementBtn = itemRow?.querySelector('.decrement-btn i');
+                
+                    if (data.quantity > 0) {
+                        if (quantitySpan) quantitySpan.textContent = data.quantity;
+                        if (itemTotal) itemTotal.textContent = data.item_total;
+                    
+                        // 🔁 Met à jour dynamiquement l’icône du bouton "-"
+                        if (decrementBtn) {
+                            if (data.quantity === 1) {
+                                decrementBtn.className = 'bi bi-trash3 text-danger';
+                            } else {
+                                decrementBtn.className = 'bi bi-dash-lg';
+                            }
+                        }
+                    } else if (itemRow) {
+                        itemRow.remove();
+                    }
+                
+                    if (totalPriceSpan) totalPriceSpan.textContent = data.cart_total;
+                
+                    if (badge) {
+                        badge.textContent = data.cart_item_count;
+                        badge.classList.toggle("d-none", data.cart_item_count === 0);
+
+                    }
+                
+                    // ✅ Ajoute ceci à la fin
+                    document.dispatchEvent(new Event("cartUpdated"));
+                }
+            });
+
+        }
+
+        document.querySelectorAll('.increment-btn').forEach(button => {
+            button.addEventListener('click', () => updateCart(button.dataset.gameId, 'increment'));
+        });
+
+        document.querySelectorAll('.decrement-btn').forEach(button => {
+            button.addEventListener('click', () => updateCart(button.dataset.gameId, 'decrement'));
+        });
+    });
+</script>
+
+
+{% endblock %}

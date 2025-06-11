@@ -1,0 +1,504 @@
+{% load static %}
+{% include 'nav.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Keys Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+        }
+        .form-control::placeholder {
+            color: #bbb;
+        }
+        .card-img-top.fixed-size {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(200, 170, 110, 0.2); /* halo gold */
+        }
+        ul#game-list {
+            list-style: none;
+            padding-left: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* centre les items */
+            gap: 24px; /* Ajouté pour espacement harmonieux */
+        }
+        li.game-item {
+            border: 1px solid #C8AA6E; /* or/premium border */
+            background: linear-gradient(145deg, #1a1a1a, #2a2a2a);
+            box-shadow: 0 0 10px rgba(200, 170, 110, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            border-radius: 0.5rem;
+            height: 420px; /* taille fixe pour uniformité */
+            padding: 12px;
+            margin: 0; /* retrait de l'ancien margin */
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            flex: 0 0 calc(33.333% - 24px); /* 3 cards par ligne, espacement inclus */
+            box-sizing: border-box;
+        }
+        li.game-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(200, 170, 110, 0.25);
+        }
+        .game-item a {
+            color: #C8AA6E !important; /* or gold */
+            text-decoration: none !important;
+            font-size: 0.95rem;
+        }
+        .game-item a:hover {
+            color: #D3BB8B !important; /* lighter gold on hover */
+        }
+        .card-text {
+            color: #ddd;
+        }
+        ::marker {
+            display: none;
+            color: transparent;
+        }
+        .no-image {
+            width: 100%;
+            height: 200px;
+            background-color: #444;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .game-title {
+            margin-top: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.3;
+            max-height: 3.9em; /* pour 3 lignes */
+            overflow: hidden;
+        }
+        .price {
+            position: absolute;
+            bottom: 10px;
+            right: 12px;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #f0e68c;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            margin: 2px;
+            background-color: #333;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            color: #fff;
+            white-space: nowrap;
+        }
+        .platform-pc { background-color: #888888; color: #ffffff; }
+        .platform-playstation-4, .platform-playstation-5 { background-color: #003791; color: #ffffff; }
+        .platform-xbox-one, .platform-xbox-series-sx { background-color: #107C10; color: #ffffff; }
+        .platform-nintendo-switch { background-color: #f00000; color: #ffffff; }
+        .platform-macos { background-color: #888888; color: #ffffff; }
+        .platform-linux { background-color: #ff6600; color: #ffffff; }
+
+        /* Ajout d’un bouton retour haut de page */
+        #scrollTopBtn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #C8AA6E;
+            color: #111;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 9999;
+        }
+        #scrollTopBtn:hover {
+            background-color: #D3BB8B;
+        }
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        .sticky-top.shrink input {
+            width: 200px !important;
+            font-size: 0.9rem;
+        }
+        .btn-outline-light, .btn-light {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-outline-light:hover {
+            background-color: #C8AA6E;
+            color: #111;
+            border-color: #C8AA6E;
+        }
+        
+        .btn-light {
+            color: #111;
+            background-color: #fff;
+        }
+        
+        .filter-tag {
+            padding: 6px 14px;
+            border-radius: 999px;
+            background-color: #2c2c2c;
+            color: #eee;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+    
+        .filter-tag:hover {
+            background-color: #C8AA6E;
+            color: #111;
+        }
+    
+        .filter-tag.active {
+            background-color: #fff;
+            color: #111;
+            border-color: #C8AA6E;
+        }
+        .offcanvas-body {
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: #C8AA6E #1a1a1a;
+        }
+        
+        .offcanvas-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .offcanvas-body::-webkit-scrollbar-thumb {
+            background-color: #C8AA6E;
+            border-radius: 10px;
+        }
+        
+        .offcanvas-body::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+#search-suggestions {
+    background-color: #1a1a1a;
+    border: 1px solid #C8AA6E;
+    top: 100%;
+    border-radius: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(200, 170, 110, 0.2);
+    z-index: 1051;
+}
+    .autocomplete-item {
+        padding: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.2s ease;
+    }
+    
+    .autocomplete-item:hover {
+        background-color: #2a2a2a;
+    }
+    
+    .autocomplete-item img {
+        border-radius: 0.25rem;
+    }
+        .suggestion-item:hover {
+    background-color: #2b2b2b;
+}
+.suggestion-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+    </style>
+</head>
+<body>
+
+<!-- Bouton sticky gauche -->
+<button id="openFilterBtn"
+        class="btn btn-outline-light position-fixed top-50 start-0 translate-middle-y z-3 shadow"
+        style="border-radius: 0 1rem 1rem 0;"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#filterSidebar"
+        aria-label="Filtres">
+    <i class="bi bi-sliders"></i>
+</button>
+
+<!-- Panneau latéral -->
+<div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="filterSidebar">
+  <div class="offcanvas-header border-bottom border-secondary">
+    <h5 class="offcanvas-title text-warning">Filtres</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+
+    <!-- Genres -->
+    <div class="mb-4">
+      <h6 class="text-light">Genres</h6>
+      <div id="genre-tags" class="d-flex flex-wrap gap-2">
+        {% for genre in genres %}
+          <span class="tag filter-tag" data-type="genre" data-value="{{ genre.name }}">{{ genre.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Studios -->
+    <div>
+      <h6 class="text-light">Studios</h6>
+      <div id="studio-tags" class="d-flex flex-wrap gap-2">
+        {% for dev in developers %}
+          <span class="tag filter-tag" data-type="developer" data-value="{{ dev.name }}">{{ dev.name }}</span>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<div class="container py-4">
+    <h1 class="text-center mb-4">Game Keys Store</h1>
+
+    <!-- Barre de recherche -->
+<div class="sticky-top py-2" style="z-index: 1050;">
+    <div class="container d-flex justify-content-center position-relative">
+        <input type="text" id="search-input" class="form-control w-50 transition-all" placeholder="Rechercher un jeu..." value="">
+        <div id="search-suggestions" class="autocomplete-results position-absolute w-50" style="display: none;"></div>
+    </div>
+</div>
+
+
+
+
+
+    <!-- Filtres plateformes -->
+    <div class="d-flex justify-content-center flex-wrap gap-2 mb-4">
+        <button class="btn pc platform-btn {% if 'PC' in platform %}active{% endif %}" data-platform="PC">PC</button>
+        <button class="btn playstation platform-btn {% if 'PlayStation' in platform %}active{% endif %}" data-platform="PlayStation">PlayStation</button>
+        <button class="btn xbox platform-btn {% if 'Xbox' in platform %}active{% endif %}" data-platform="Xbox">Xbox</button>
+        <button class="btn switch platform-btn {% if 'Switch' in platform %}active{% endif %}" data-platform="Switch">Switch</button>
+    </div>
+
+    <!-- Liste des jeux -->
+    <ul id="game-list" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% include "store/includes/game_list_items.html" %}
+    </ul>
+
+    <div id="loading" class="text-center my-4" style="display:none;">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+</div>
+<button id="scrollTopBtn" title="Retour en haut">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const searchSuggestions = document.getElementById('search-suggestions');
+    const scrollBtn = document.getElementById("scrollTopBtn");
+
+    let page = 2;
+    let loading = false;
+    let hasNext = true;
+
+    let selectedFilters = {
+        genre: [],
+        developer: [],
+        platform: "{{ platform }}" || null
+    };
+
+    const show_adult = "{{ show_adult|yesno:'1,0' }}";
+
+    function updateGameList() {
+        const query = searchInput.value || '';
+        const genre = selectedFilters.genre.join(',');
+        const developer = selectedFilters.developer.join(',');
+        const platform = selectedFilters.platform || '';
+
+        fetch(`/search/?query=${encodeURIComponent(query)}&genre=${genre}&developer=${developer}&platform=${platform}&show_adult=${show_adult}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("game-list").innerHTML = data.html;
+                page = 2; // reset scroll
+                hasNext = true;
+            });
+    }
+
+    // Filtres tags
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+        tag.addEventListener('click', () => {
+            const type = tag.dataset.type;
+            const value = tag.dataset.value;
+            const index = selectedFilters[type].indexOf(value);
+
+            if (index > -1) {
+                selectedFilters[type].splice(index, 1);
+                tag.classList.remove('active');
+            } else {
+                selectedFilters[type].push(value);
+                tag.classList.add('active');
+            }
+
+            updateGameList();
+        });
+    });
+
+    // Filtres plateforme
+    document.querySelectorAll('.platform-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const platform = button.dataset.platform;
+            const isActive = selectedFilters.platform === platform;
+
+            selectedFilters.platform = isActive ? null : platform;
+            document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+            if (!isActive) button.classList.add('active');
+
+            updateGameList();
+        });
+    });
+
+    // Recherche AJAX + suggestions
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        const platform = selectedFilters.platform || '';
+
+        if (query.length < 2) {
+            searchSuggestions.style.display = 'none';
+            return;
+        }
+
+        fetch(`/search/?query=${encodeURIComponent(query)}&platform=${encodeURIComponent(platform)}&autocomplete=1`)
+            .then(response => response.json())
+            .then(data => {
+                searchSuggestions.innerHTML = '';
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(game => {
+                        const div = document.createElement('a');
+                        div.href = `/games/${game.id}/`;
+                        div.className = 'suggestion-item d-flex align-items-center text-light text-decoration-none p-2';
+                        div.innerHTML = `
+                            <img src="${game.image_url}" alt="${game.name}" 
+                                 onerror="this.src='/static/img/no-image.png'" 
+                                 style="width:50px; height:50px; margin-right:10px; object-fit:cover; border-radius:4px;">
+                            <span>${game.name}</span>
+                        `;
+                        searchSuggestions.appendChild(div);
+                    });
+                    searchSuggestions.style.display = 'block';
+                } else {
+                    searchSuggestions.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la recherche :', error);
+                searchSuggestions.innerHTML = '';
+                searchSuggestions.style.display = 'none';
+            });
+    });
+
+    // Sticky header
+    window.addEventListener('scroll', () => {
+        document.querySelector('.sticky-top')?.classList.toggle('shrink', window.scrollY > 100);
+    });
+
+    // Lazy loading
+    window.addEventListener('scroll', () => {
+        if (!hasNext || loading) return;
+        const scrollY = window.scrollY || window.pageYOffset;
+        const visible = window.innerHeight;
+        const pageHeight = document.documentElement.scrollHeight;
+        if (scrollY + visible >= pageHeight - 100) loadMoreGames();
+    });
+
+    function loadMoreGames() {
+        loading = true;
+        document.getElementById('loading').style.display = 'block';
+
+        const query = searchInput.value || '';
+        const genre = selectedFilters.genre.join(',');
+        const developer = selectedFilters.developer.join(',');
+        const platform = selectedFilters.platform || '';
+
+        fetch(`/load-more-games/?page=${page}&query=${encodeURIComponent(query)}&genre=${genre}&developer=${developer}&platform=${platform}&show_adult=${show_adult}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('game-list').insertAdjacentHTML('beforeend', data.html);
+                hasNext = data.has_next;
+                page++;
+                loading = false;
+                document.getElementById('loading').style.display = 'none';
+            });
+    }
+
+    // Bouton scroll haut
+    window.addEventListener("scroll", () => {
+        scrollBtn.style.display = window.scrollY > 300 ? "flex" : "none";
+    });
+
+    scrollBtn.addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // Affichage jeux 18+
+    function confirmAdultAccess() {
+        if (confirm("Ce contenu est réservé aux personnes de 18 ans et plus. Confirmez-vous avoir plus de 18 ans ?")) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('show_adult', '1');
+            window.location.href = url.toString();
+        }
+    }
+
+    // Hover vidéo
+    document.querySelectorAll('.game-thumb').forEach(img => {
+        const gameId = img.dataset.gameId;
+        const video = document.querySelector(`video[data-game-id='${gameId}']`);
+        if (!video) return;
+
+        img.addEventListener('mouseenter', () => {
+            img.classList.add('d-none');
+            video.classList.remove('d-none');
+            video.play();
+        });
+
+        video.addEventListener('mouseleave', () => {
+            video.pause();
+            video.currentTime = 0;
+            video.classList.add('d-none');
+            img.classList.remove('d-none');
+        });
+    });
+</script>
+
+</body>
+
+    
+</body>
+</html>

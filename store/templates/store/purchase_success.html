@@ -1,0 +1,7 @@
+<h2>Merci pour votre achat !</h2>
+<p>Voici vos clés :</p>
+<ul>
+    {% for game, key in keys %}
+        <li><strong>{{ game }}</strong> : {{ key }}</li>
+    {% endfor %}
+</ul>

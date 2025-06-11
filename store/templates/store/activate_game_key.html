@@ -1,0 +1,8 @@
+<!-- templates/store/activate_game_key.html -->
+<h2>Activer une clé de jeu</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Activer</button>
+</form>
